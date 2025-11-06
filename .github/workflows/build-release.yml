@@ -8,6 +8,9 @@ on:
       - 'v*'
   workflow_dispatch:  # 允许手动触发
 
+permissions:
+  contents: write  # 允许创建Release和上传文件
+
 jobs:
   build-windows:
     runs-on: windows-latest
