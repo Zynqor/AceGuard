@@ -54,10 +54,12 @@ WIN11_COLORS = {
     'accent': '#0067C0',          # 强调色 - 更深的蓝
     'accent_hover': '#005A9E',    # 强调色悬停
     'success': '#0F7B0F',         # 成功 - 深绿
+    'success_hover': '#0D6B0D',   # 成功悬停
     'warning': '#F7630C',         # 警告 - 橙色
     'danger': '#C42B1C',          # 危险 - 深红
-    'button_bg': '#FBFBFB',       # 按钮背景
-    'button_hover': '#F5F5F5',    # 按钮悬停
+    'danger_hover': '#A81810',    # 危险悬停
+    'button_bg': '#E8E8E8',       # 按钮背景 - 更深的灰色
+    'button_hover': '#D5D5D5',    # 按钮悬停 - 更深
 }
 
 
@@ -108,24 +110,27 @@ class AutostartManager:
 
 
 class ModernButton(tk.Canvas):
-    """Win11风格的现代化按钮"""
+    """Win11风格的现代化圆角按钮"""
 
     def __init__(self, parent, text="", command=None, width=120, height=36,
-                 bg_color=None, fg_color=None, hover_color=None, **kwargs):
+                 bg_color=None, fg_color=None, hover_color=None, corner_radius=6, **kwargs):
         self.bg_color = bg_color or WIN11_COLORS['accent']
         self.fg_color = fg_color or '#FFFFFF'
         self.hover_color = hover_color or WIN11_COLORS['accent_hover']
         self.command = command
+        self.corner_radius = corner_radius
+        self.width = width
+        self.height = height
 
         super().__init__(parent, width=width, height=height,
                         bg=WIN11_COLORS['card_bg'],
                         highlightthickness=0, **kwargs)
 
         # 绘制圆角矩形按钮
-        self.rect = self.create_rectangle(2, 2, width-2, height-2,
-                                          fill=self.bg_color,
-                                          outline='',
-                                          width=0)
+        self.rect_id = self._create_rounded_rect(
+            2, 2, width-2, height-2,
+            corner_radius, fill=self.bg_color, outline=''
+        )
         self.text_id = self.create_text(width//2, height//2,
                                        text=text,
                                        fill=self.fg_color,
@@ -136,12 +141,38 @@ class ModernButton(tk.Canvas):
         self.bind('<Leave>', self._on_leave)
         self.bind('<Button-1>', self._on_click)
 
+    def _create_rounded_rect(self, x1, y1, x2, y2, radius, **kwargs):
+        """创建圆角矩形"""
+        points = [
+            x1+radius, y1,
+            x1+radius, y1,
+            x2-radius, y1,
+            x2-radius, y1,
+            x2, y1,
+            x2, y1+radius,
+            x2, y1+radius,
+            x2, y2-radius,
+            x2, y2-radius,
+            x2, y2,
+            x2-radius, y2,
+            x2-radius, y2,
+            x1+radius, y2,
+            x1+radius, y2,
+            x1, y2,
+            x1, y2-radius,
+            x1, y2-radius,
+            x1, y1+radius,
+            x1, y1+radius,
+            x1, y1,
+        ]
+        return self.create_polygon(points, smooth=True, **kwargs)
+
     def _on_enter(self, event):
-        self.itemconfig(self.rect, fill=self.hover_color)
+        self.itemconfig(self.rect_id, fill=self.hover_color)
         self.config(cursor='hand2')
 
     def _on_leave(self, event):
-        self.itemconfig(self.rect, fill=self.bg_color)
+        self.itemconfig(self.rect_id, fill=self.bg_color)
         self.config(cursor='')
 
     def _on_click(self, event):
@@ -348,7 +379,7 @@ class ProcessManagerGUI:
             width=100,
             height=38,
             bg_color=WIN11_COLORS['danger'],
-            hover_color='#A81810'
+            hover_color=WIN11_COLORS['danger_hover']
         )
         self.delete_btn.pack(side=tk.LEFT)
 
@@ -440,7 +471,8 @@ class ProcessManagerGUI:
             command=self.start_monitor,
             width=180,
             height=42,
-            bg_color=WIN11_COLORS['success']
+            bg_color=WIN11_COLORS['success'],
+            hover_color=WIN11_COLORS['success_hover']
         )
         self.start_btn.grid(row=0, column=0, padx=(0, 8), pady=(0, 8), sticky='ew')
 
@@ -450,7 +482,8 @@ class ProcessManagerGUI:
             command=self.stop_monitor,
             width=180,
             height=42,
-            bg_color=WIN11_COLORS['danger']
+            bg_color=WIN11_COLORS['danger'],
+            hover_color=WIN11_COLORS['danger_hover']
         )
         self.stop_btn.grid(row=0, column=1, padx=(0, 0), pady=(0, 8), sticky='ew')
 
@@ -973,7 +1006,8 @@ class ProcessEditDialog:
             command=self.ok,
             width=120,
             height=40,
-            bg_color=WIN11_COLORS['success']
+            bg_color=WIN11_COLORS['success'],
+            hover_color=WIN11_COLORS['success_hover']
         )
         ok_btn.pack(side=tk.LEFT, padx=6)
 
