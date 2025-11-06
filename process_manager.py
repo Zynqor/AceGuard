@@ -88,6 +88,40 @@ def get_process_by_name(process_name: str) -> List[int]:
     return pids
 
 
+def get_process_by_path(process_path: str) -> List[int]:
+    """
+    根据进程路径获取所有匹配的进程PID
+
+    Args:
+        process_path: 进程完整路径，如 "C:\\Program Files\\Game\\AceGuard.exe"
+
+    Returns:
+        进程PID列表
+    """
+    pids = []
+
+    if not HAS_PSUTIL:
+        print("需要安装psutil库来支持路径匹配")
+        return pids
+
+    # 规范化路径用于比较
+    import os
+    normalized_path = os.path.normpath(process_path).lower()
+
+    for proc in psutil.process_iter(['pid', 'exe']):
+        try:
+            exe_path = proc.info.get('exe')
+            if exe_path:
+                # 规范化进程路径并比较
+                proc_path = os.path.normpath(exe_path).lower()
+                if proc_path == normalized_path:
+                    pids.append(proc.info['pid'])
+        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+            pass
+
+    return pids
+
+
 def affinity_list_to_mask(cores: List[int]) -> int:
     """
     将核心列表转换为亲和性掩码
