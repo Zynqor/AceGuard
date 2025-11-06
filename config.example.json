@@ -1,0 +1,9 @@
+{
+  "processes": [
+    {
+      "name": "YourProgram.exe",
+      "affinity": [0, 1],
+      "priority": "IDLE"
+    }
+  ]
+}
