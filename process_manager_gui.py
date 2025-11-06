@@ -113,7 +113,7 @@ class ModernButton(tk.Canvas):
     """Win11风格的现代化圆角按钮"""
 
     def __init__(self, parent, text="", command=None, width=120, height=36,
-                 bg_color=None, fg_color=None, hover_color=None, corner_radius=6, **kwargs):
+                 bg_color=None, fg_color=None, hover_color=None, corner_radius=8, **kwargs):
         self.bg_color = bg_color or WIN11_COLORS['accent']
         self.fg_color = fg_color or '#FFFFFF'
         self.hover_color = hover_color or WIN11_COLORS['accent_hover']
@@ -186,7 +186,7 @@ class ProcessManagerGUI:
     def __init__(self, start_minimized=False):
         self.root = tk.Tk()
         self.root.title("AceGuard 进程资源限制工具")
-        self.root.geometry("1200x760")
+        self.root.geometry("1300x800")  # 黄金比例 1.625:1 (接近1.618)
         self.root.configure(bg=WIN11_COLORS['bg'])
         self.root.resizable(True, True)
 
@@ -384,7 +384,7 @@ class ProcessManagerGUI:
         self.delete_btn.pack(side=tk.LEFT)
 
         # 右侧面板 - 控制和日志
-        right_panel = tk.Frame(main_container, bg=WIN11_COLORS['bg'], width=420)
+        right_panel = tk.Frame(main_container, bg=WIN11_COLORS['bg'], width=450)
         right_panel.pack(side=tk.RIGHT, fill=tk.BOTH)
         right_panel.pack_propagate(False)
 
@@ -513,7 +513,7 @@ class ProcessManagerGUI:
                 other_buttons,
                 text="📌 最小化到托盘",
                 command=self.minimize_to_tray,
-                width=368,
+                width=410,
                 height=38,
                 bg_color=WIN11_COLORS['button_bg'],
                 fg_color=WIN11_COLORS['text'],
@@ -525,7 +525,7 @@ class ProcessManagerGUI:
             other_buttons,
             text="🚀 开机自启动",
             command=self.toggle_autostart,
-            width=368,
+            width=410,
             height=38,
             bg_color=WIN11_COLORS['button_bg'],
             fg_color=WIN11_COLORS['text'],
@@ -570,7 +570,7 @@ class ProcessManagerGUI:
             log_card,
             text="🗑️ 清空日志",
             command=self.clear_log,
-            width=368,
+            width=410,
             height=38,
             bg_color=WIN11_COLORS['button_bg'],
             fg_color=WIN11_COLORS['text'],
@@ -865,7 +865,7 @@ class ProcessEditDialog:
 
         self.dialog = tk.Toplevel(parent)
         self.dialog.title(title)
-        self.dialog.geometry("620x420")
+        self.dialog.geometry("620x520")  # 增加高度以显示所有按钮
         self.dialog.configure(bg=WIN11_COLORS['bg'])
         self.dialog.transient(parent)
         self.dialog.grab_set()
