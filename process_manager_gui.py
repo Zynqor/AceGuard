@@ -46,18 +46,18 @@ from process_manager import (
 
 # Win11浅色主题配色
 WIN11_COLORS = {
-    'bg': '#F3F3F3',              # 主背景 - 浅灰
-    'card_bg': '#FFFFFF',         # 卡片背景 - 白色
-    'border': '#E0E0E0',          # 边框 - 浅灰色
-    'text': '#1C1C1C',            # 主文字 - 深灰
-    'text_secondary': '#6B6B6B',  # 次要文字 - 中灰
-    'accent': '#0078D4',          # 强调色 - Win11蓝
+    'bg': '#F3F3F3',              # 主背景
+    'card_bg': '#FFFFFF',         # 卡片背景
+    'border': '#E5E5E5',          # 边框
+    'text': '#1C1C1C',            # 主文字
+    'text_secondary': '#6B6B6B',  # 次要文字
+    'accent': '#0067C0',          # 强调色 - 更深的蓝
     'accent_hover': '#005A9E',    # 强调色悬停
-    'success': '#107C10',         # 成功 - 绿色
-    'warning': '#FF8C00',         # 警告 - 橙色
-    'danger': '#D13438',          # 危险 - 红色
-    'button_bg': '#FFFFFF',       # 按钮背景
-    'button_hover': '#F9F9F9',    # 按钮悬停
+    'success': '#0F7B0F',         # 成功 - 深绿
+    'warning': '#F7630C',         # 警告 - 橙色
+    'danger': '#C42B1C',          # 危险 - 深红
+    'button_bg': '#FBFBFB',       # 按钮背景
+    'button_hover': '#F5F5F5',    # 按钮悬停
 }
 
 
@@ -110,19 +110,18 @@ class AutostartManager:
 class ModernButton(tk.Canvas):
     """Win11风格的现代化按钮"""
 
-    def __init__(self, parent, text="", command=None, width=120, height=32,
+    def __init__(self, parent, text="", command=None, width=120, height=36,
                  bg_color=None, fg_color=None, hover_color=None, **kwargs):
         self.bg_color = bg_color or WIN11_COLORS['accent']
         self.fg_color = fg_color or '#FFFFFF'
         self.hover_color = hover_color or WIN11_COLORS['accent_hover']
-        self.default_bg = self.bg_color
         self.command = command
 
         super().__init__(parent, width=width, height=height,
                         bg=WIN11_COLORS['card_bg'],
                         highlightthickness=0, **kwargs)
 
-        # 绘制按钮
+        # 绘制圆角矩形按钮
         self.rect = self.create_rectangle(2, 2, width-2, height-2,
                                           fill=self.bg_color,
                                           outline='',
@@ -130,7 +129,7 @@ class ModernButton(tk.Canvas):
         self.text_id = self.create_text(width//2, height//2,
                                        text=text,
                                        fill=self.fg_color,
-                                       font=('Segoe UI', 10))
+                                       font=('Segoe UI', 10, 'bold'))
 
         # 绑定事件
         self.bind('<Enter>', self._on_enter)
@@ -149,9 +148,6 @@ class ModernButton(tk.Canvas):
         if self.command:
             self.command()
 
-    def config_text(self, text):
-        self.itemconfig(self.text_id, text=text)
-
 
 class ProcessManagerGUI:
     """Win11风格进程管理器GUI"""
@@ -159,8 +155,9 @@ class ProcessManagerGUI:
     def __init__(self, start_minimized=False):
         self.root = tk.Tk()
         self.root.title("AceGuard 进程资源限制工具")
-        self.root.geometry("1100x750")
+        self.root.geometry("1200x760")
         self.root.configure(bg=WIN11_COLORS['bg'])
+        self.root.resizable(True, True)
 
         # 设置Win11风格
         self.setup_styles()
@@ -216,31 +213,36 @@ class ProcessManagerGUI:
                        foreground=WIN11_COLORS['text'],
                        fieldbackground=WIN11_COLORS['card_bg'],
                        borderwidth=0,
+                       rowheight=28,
                        font=('Segoe UI', 10))
         style.configure("Modern.Treeview.Heading",
                        background=WIN11_COLORS['bg'],
                        foreground=WIN11_COLORS['text'],
-                       borderwidth=0,
+                       borderwidth=1,
+                       relief='flat',
                        font=('Segoe UI', 10, 'bold'))
         style.map('Modern.Treeview',
                  background=[('selected', WIN11_COLORS['accent'])],
                  foreground=[('selected', '#FFFFFF')])
+        style.map('Modern.Treeview.Heading',
+                 background=[('active', WIN11_COLORS['border'])])
 
     def build_ui(self):
         """构建用户界面"""
         # 顶部标题栏
-        title_frame = tk.Frame(self.root, bg=WIN11_COLORS['card_bg'], height=60)
-        title_frame.pack(fill=tk.X, padx=0, pady=0)
+        title_frame = tk.Frame(self.root, bg=WIN11_COLORS['card_bg'], height=64)
+        title_frame.pack(fill=tk.X)
         title_frame.pack_propagate(False)
 
+        # 标题
         title_label = tk.Label(
             title_frame,
             text="AceGuard 进程资源限制工具",
             bg=WIN11_COLORS['card_bg'],
             fg=WIN11_COLORS['text'],
-            font=('Segoe UI', 16, 'bold')
+            font=('Segoe UI', 18, 'bold')
         )
-        title_label.pack(side=tk.LEFT, padx=20, pady=15)
+        title_label.pack(side=tk.LEFT, padx=24, pady=16)
 
         # 警告标签
         warning_label = tk.Label(
@@ -248,118 +250,132 @@ class ProcessManagerGUI:
             text="⚠ 仅供学习研究使用",
             bg=WIN11_COLORS['card_bg'],
             fg=WIN11_COLORS['warning'],
-            font=('Segoe UI', 9)
+            font=('Segoe UI', 10)
         )
-        warning_label.pack(side=tk.RIGHT, padx=20)
+        warning_label.pack(side=tk.RIGHT, padx=24)
+
+        # 分隔线
+        separator = tk.Frame(self.root, bg=WIN11_COLORS['border'], height=1)
+        separator.pack(fill=tk.X)
 
         # 主容器
         main_container = tk.Frame(self.root, bg=WIN11_COLORS['bg'])
-        main_container.pack(fill=tk.BOTH, expand=True, padx=15, pady=10)
+        main_container.pack(fill=tk.BOTH, expand=True, padx=16, pady=16)
 
         # 左侧面板 - 进程列表
         left_panel = tk.Frame(main_container, bg=WIN11_COLORS['card_bg'])
-        left_panel.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(0, 10))
+        left_panel.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(0, 12))
 
         # 左侧标题
+        left_header = tk.Frame(left_panel, bg=WIN11_COLORS['card_bg'])
+        left_header.pack(fill=tk.X, padx=20, pady=(16, 12))
+
         left_title = tk.Label(
-            left_panel,
+            left_header,
             text="监控列表",
             bg=WIN11_COLORS['card_bg'],
             fg=WIN11_COLORS['text'],
-            font=('Segoe UI', 12, 'bold')
+            font=('Segoe UI', 13, 'bold')
         )
-        left_title.pack(anchor=tk.W, padx=15, pady=(15, 10))
+        left_title.pack(side=tk.LEFT)
 
         # 进程列表（Treeview）
-        tree_frame = tk.Frame(left_panel, bg=WIN11_COLORS['card_bg'])
-        tree_frame.pack(fill=tk.BOTH, expand=True, padx=15, pady=(0, 10))
+        tree_container = tk.Frame(left_panel, bg=WIN11_COLORS['card_bg'])
+        tree_container.pack(fill=tk.BOTH, expand=True, padx=20, pady=(0, 12))
 
+        # 创建Treeview
         self.process_tree = ttk.Treeview(
-            tree_frame,
+            tree_container,
             columns=("path", "affinity", "priority", "status"),
             show="headings",
             style="Modern.Treeview",
-            height=15
+            selectmode='browse'
         )
 
-        self.process_tree.heading("path", text="进程路径")
-        self.process_tree.heading("affinity", text="CPU核心")
-        self.process_tree.heading("priority", text="优先级")
-        self.process_tree.heading("status", text="状态")
+        # 设置列标题和宽度
+        self.process_tree.heading("path", text="进程路径", anchor='w')
+        self.process_tree.heading("affinity", text="CPU核心", anchor='center')
+        self.process_tree.heading("priority", text="优先级", anchor='center')
+        self.process_tree.heading("status", text="状态", anchor='center')
 
-        self.process_tree.column("path", width=400)
-        self.process_tree.column("affinity", width=100)
-        self.process_tree.column("priority", width=100)
-        self.process_tree.column("status", width=80)
+        # 设置列宽度和对齐
+        self.process_tree.column("path", width=360, minwidth=200, anchor='w', stretch=True)
+        self.process_tree.column("affinity", width=110, minwidth=80, anchor='center', stretch=False)
+        self.process_tree.column("priority", width=110, minwidth=80, anchor='center', stretch=False)
+        self.process_tree.column("status", width=90, minwidth=70, anchor='center', stretch=False)
 
         # 滚动条
-        scrollbar = ttk.Scrollbar(tree_frame, orient=tk.VERTICAL, command=self.process_tree.yview)
+        scrollbar = ttk.Scrollbar(tree_container, orient=tk.VERTICAL, command=self.process_tree.yview)
         self.process_tree.configure(yscrollcommand=scrollbar.set)
 
         self.process_tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
         # 按钮容器
-        button_container = tk.Frame(left_panel, bg=WIN11_COLORS['card_bg'], height=50)
-        button_container.pack(fill=tk.X, padx=15, pady=(0, 15))
-        button_container.pack_propagate(False)
+        button_frame = tk.Frame(left_panel, bg=WIN11_COLORS['card_bg'])
+        button_frame.pack(fill=tk.X, padx=20, pady=(0, 20))
 
-        # 添加按钮
+        # 左侧按钮组
+        left_buttons = tk.Frame(button_frame, bg=WIN11_COLORS['card_bg'])
+        left_buttons.pack(side=tk.LEFT)
+
         self.add_btn = ModernButton(
-            button_container,
-            text="添加进程",
+            left_buttons,
+            text="➕ 添加",
             command=self.add_process,
             width=100,
-            height=36
+            height=38,
+            bg_color=WIN11_COLORS['accent']
         )
         self.add_btn.pack(side=tk.LEFT, padx=(0, 8))
 
-        # 编辑按钮
         self.edit_btn = ModernButton(
-            button_container,
-            text="编辑",
+            left_buttons,
+            text="✏️ 编辑",
             command=self.edit_process,
-            width=80,
-            height=36,
+            width=100,
+            height=38,
             bg_color=WIN11_COLORS['button_bg'],
             fg_color=WIN11_COLORS['text'],
             hover_color=WIN11_COLORS['button_hover']
         )
         self.edit_btn.pack(side=tk.LEFT, padx=(0, 8))
 
-        # 删除按钮
         self.delete_btn = ModernButton(
-            button_container,
-            text="删除",
+            left_buttons,
+            text="🗑️ 删除",
             command=self.delete_process,
-            width=80,
-            height=36,
+            width=100,
+            height=38,
             bg_color=WIN11_COLORS['danger'],
-            hover_color='#A91D22'
+            hover_color='#A81810'
         )
         self.delete_btn.pack(side=tk.LEFT)
 
         # 右侧面板 - 控制和日志
-        right_panel = tk.Frame(main_container, bg=WIN11_COLORS['bg'], width=400)
+        right_panel = tk.Frame(main_container, bg=WIN11_COLORS['bg'], width=420)
         right_panel.pack(side=tk.RIGHT, fill=tk.BOTH)
         right_panel.pack_propagate(False)
 
         # 控制面板
         control_card = tk.Frame(right_panel, bg=WIN11_COLORS['card_bg'])
-        control_card.pack(fill=tk.X, pady=(0, 10))
+        control_card.pack(fill=tk.X, pady=(0, 12))
+
+        control_header = tk.Frame(control_card, bg=WIN11_COLORS['card_bg'])
+        control_header.pack(fill=tk.X, padx=20, pady=(16, 12))
 
         control_title = tk.Label(
-            control_card,
+            control_header,
             text="控制面板",
             bg=WIN11_COLORS['card_bg'],
             fg=WIN11_COLORS['text'],
-            font=('Segoe UI', 12, 'bold')
+            font=('Segoe UI', 13, 'bold')
         )
-        control_title.pack(anchor=tk.W, padx=15, pady=(15, 10))
+        control_title.pack(side=tk.LEFT)
 
         # 监控间隔设置
         interval_frame = tk.Frame(control_card, bg=WIN11_COLORS['card_bg'])
-        interval_frame.pack(fill=tk.X, padx=15, pady=(0, 10))
+        interval_frame.pack(fill=tk.X, padx=20, pady=(0, 12))
 
         tk.Label(
             interval_frame,
@@ -375,12 +391,13 @@ class ProcessManagerGUI:
             from_=1,
             to=60,
             textvariable=self.interval_var,
-            width=5,
+            width=6,
             font=('Segoe UI', 10),
             bd=1,
-            relief=tk.SOLID
+            relief=tk.SOLID,
+            buttonbackground=WIN11_COLORS['button_bg']
         )
-        interval_spin.pack(side=tk.LEFT, padx=8)
+        interval_spin.pack(side=tk.LEFT, padx=10)
 
         tk.Label(
             interval_frame,
@@ -391,94 +408,117 @@ class ProcessManagerGUI:
         ).pack(side=tk.LEFT)
 
         # 状态显示
-        self.status_var = tk.StringVar(value="未运行")
+        status_frame = tk.Frame(control_card, bg=WIN11_COLORS['card_bg'])
+        status_frame.pack(fill=tk.X, padx=20, pady=(0, 16))
+
+        tk.Label(
+            status_frame,
+            text="状态:",
+            bg=WIN11_COLORS['card_bg'],
+            fg=WIN11_COLORS['text'],
+            font=('Segoe UI', 10)
+        ).pack(side=tk.LEFT)
+
+        self.status_var = tk.StringVar(value="○ 未运行")
         status_label = tk.Label(
-            control_card,
+            status_frame,
             textvariable=self.status_var,
             bg=WIN11_COLORS['card_bg'],
             fg=WIN11_COLORS['text_secondary'],
-            font=('Segoe UI', 10)
+            font=('Segoe UI', 10, 'bold')
         )
-        status_label.pack(pady=(0, 15), padx=15)
+        status_label.pack(side=tk.LEFT, padx=10)
 
-        # 控制按钮
-        btn_frame = tk.Frame(control_card, bg=WIN11_COLORS['card_bg'])
-        btn_frame.pack(fill=tk.X, padx=15, pady=(0, 15))
+        # 控制按钮 - 使用Grid布局，2行x2列
+        btn_container = tk.Frame(control_card, bg=WIN11_COLORS['card_bg'])
+        btn_container.pack(fill=tk.X, padx=20, pady=(0, 16))
 
+        # 第一行
         self.start_btn = ModernButton(
-            btn_frame,
-            text="开始监控",
+            btn_container,
+            text="▶ 开始监控",
             command=self.start_monitor,
-            width=110,
-            height=40,
+            width=180,
+            height=42,
             bg_color=WIN11_COLORS['success']
         )
-        self.start_btn.pack(side=tk.LEFT, padx=(0, 10))
+        self.start_btn.grid(row=0, column=0, padx=(0, 8), pady=(0, 8), sticky='ew')
 
         self.stop_btn = ModernButton(
-            btn_frame,
-            text="停止监控",
+            btn_container,
+            text="⏸ 停止监控",
             command=self.stop_monitor,
-            width=110,
-            height=40,
+            width=180,
+            height=42,
             bg_color=WIN11_COLORS['danger']
         )
-        self.stop_btn.pack(side=tk.LEFT, padx=(0, 10))
+        self.stop_btn.grid(row=0, column=1, padx=(0, 0), pady=(0, 8), sticky='ew')
 
+        # 第二行
         self.apply_btn = ModernButton(
-            btn_frame,
-            text="立即应用",
+            btn_container,
+            text="🔄 立即应用",
             command=self.apply_once,
-            width=110,
-            height=40,
+            width=180,
+            height=42,
             bg_color=WIN11_COLORS['button_bg'],
             fg_color=WIN11_COLORS['text'],
             hover_color=WIN11_COLORS['button_hover']
         )
-        self.apply_btn.pack(side=tk.LEFT)
+        self.apply_btn.grid(row=1, column=0, columnspan=2, pady=(0, 0), sticky='ew')
+
+        # 配置grid权重
+        btn_container.grid_columnconfigure(0, weight=1)
+        btn_container.grid_columnconfigure(1, weight=1)
 
         # 其他功能按钮
+        other_buttons = tk.Frame(control_card, bg=WIN11_COLORS['card_bg'])
+        other_buttons.pack(fill=tk.X, padx=20, pady=(0, 20))
+
         if HAS_PYSTRAY:
             tray_btn = ModernButton(
-                control_card,
-                text="最小化到托盘",
+                other_buttons,
+                text="📌 最小化到托盘",
                 command=self.minimize_to_tray,
-                width=350,
-                height=36,
+                width=368,
+                height=38,
                 bg_color=WIN11_COLORS['button_bg'],
                 fg_color=WIN11_COLORS['text'],
                 hover_color=WIN11_COLORS['button_hover']
             )
-            tray_btn.pack(padx=15, pady=(0, 10))
+            tray_btn.pack(pady=(0, 8))
 
         autostart_btn = ModernButton(
-            control_card,
-            text="开机自启动",
+            other_buttons,
+            text="🚀 开机自启动",
             command=self.toggle_autostart,
-            width=350,
-            height=36,
+            width=368,
+            height=38,
             bg_color=WIN11_COLORS['button_bg'],
             fg_color=WIN11_COLORS['text'],
             hover_color=WIN11_COLORS['button_hover']
         )
-        autostart_btn.pack(padx=15, pady=(0, 15))
+        autostart_btn.pack()
 
         # 日志面板
         log_card = tk.Frame(right_panel, bg=WIN11_COLORS['card_bg'])
         log_card.pack(fill=tk.BOTH, expand=True)
 
+        log_header = tk.Frame(log_card, bg=WIN11_COLORS['card_bg'])
+        log_header.pack(fill=tk.X, padx=20, pady=(16, 12))
+
         log_title = tk.Label(
-            log_card,
+            log_header,
             text="运行日志",
             bg=WIN11_COLORS['card_bg'],
             fg=WIN11_COLORS['text'],
-            font=('Segoe UI', 12, 'bold')
+            font=('Segoe UI', 13, 'bold')
         )
-        log_title.pack(anchor=tk.W, padx=15, pady=(15, 10))
+        log_title.pack(side=tk.LEFT)
 
         # 日志文本框
         log_frame = tk.Frame(log_card, bg=WIN11_COLORS['card_bg'])
-        log_frame.pack(fill=tk.BOTH, expand=True, padx=15, pady=(0, 10))
+        log_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=(0, 12))
 
         self.log_text = scrolledtext.ScrolledText(
             log_frame,
@@ -486,22 +526,24 @@ class ProcessManagerGUI:
             bg='#FAFAFA',
             fg=WIN11_COLORS['text'],
             relief=tk.FLAT,
-            bd=1
+            bd=0,
+            padx=8,
+            pady=8
         )
         self.log_text.pack(fill=tk.BOTH, expand=True)
 
         # 清空日志按钮
         clear_btn = ModernButton(
             log_card,
-            text="清空日志",
+            text="🗑️ 清空日志",
             command=self.clear_log,
-            width=350,
-            height=36,
+            width=368,
+            height=38,
             bg_color=WIN11_COLORS['button_bg'],
             fg_color=WIN11_COLORS['text'],
             hover_color=WIN11_COLORS['button_hover']
         )
-        clear_btn.pack(padx=15, pady=(0, 15))
+        clear_btn.pack(padx=20, pady=(0, 20))
 
         # 初始日志
         self.log("✓ 程序已启动")
@@ -515,7 +557,7 @@ class ProcessManagerGUI:
                 with open(self.config_file, 'r', encoding='utf-8') as f:
                     return json.load(f)
         except Exception as e:
-            self.log(f"✗ 加载配置失败: {e}")
+            pass
         return {"processes": []}
 
     def save_config(self):
@@ -553,12 +595,10 @@ class ProcessManagerGUI:
 
         for proc in self.config.get('processes', []):
             affinity = proc.get('affinity', [])
-            # 只显示文件名，但保存完整路径
             path = proc.get('path', '')
-            display_name = os.path.basename(path) if path else ''
 
             self.process_tree.insert('', tk.END, values=(
-                path,  # 完整路径
+                path,
                 str(affinity),
                 proc.get('priority', 'NORMAL'),
                 '待检测'
@@ -640,7 +680,7 @@ class ProcessManagerGUI:
         self.monitor_thread = threading.Thread(target=self.monitor_loop, daemon=True)
         self.monitor_thread.start()
 
-        self.status_var.set("● 监控中...")
+        self.status_var.set("● 监控中")
         self.log("▶ 开始监控")
 
     def stop_monitor(self):
@@ -651,7 +691,7 @@ class ProcessManagerGUI:
 
     def apply_once(self):
         """立即应用一次设置"""
-        self.log("→ 立即应用设置...")
+        self.log("🔄 立即应用设置...")
         self.apply_settings()
 
     def monitor_loop(self):
@@ -693,7 +733,7 @@ class ProcessManagerGUI:
                 status = "✓ 已应用" if success else "✗ 失败"
                 self.process_tree.item(item, values=(path, values[1], priority, status))
                 display_name = os.path.basename(path)
-                self.log(f"[{time.strftime('%H:%M:%S')}] {display_name} (PID: {pids}) - {status}")
+                self.log(f"[{time.strftime('%H:%M:%S')}] {display_name} (PID:{pids}) {status}")
             else:
                 self.process_tree.item(item, values=(path, values[1], priority, "未运行"))
 
@@ -792,14 +832,14 @@ class ProcessEditDialog:
 
         self.dialog = tk.Toplevel(parent)
         self.dialog.title(title)
-        self.dialog.geometry("600x400")
+        self.dialog.geometry("620x420")
         self.dialog.configure(bg=WIN11_COLORS['bg'])
         self.dialog.transient(parent)
         self.dialog.grab_set()
 
         # 主容器
         container = tk.Frame(self.dialog, bg=WIN11_COLORS['card_bg'])
-        container.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
+        container.pack(fill=tk.BOTH, expand=True, padx=24, pady=24)
 
         # 标题
         title_label = tk.Label(
@@ -807,9 +847,9 @@ class ProcessEditDialog:
             text=title,
             bg=WIN11_COLORS['card_bg'],
             fg=WIN11_COLORS['text'],
-            font=('Segoe UI', 14, 'bold')
+            font=('Segoe UI', 15, 'bold')
         )
-        title_label.pack(pady=(10, 20))
+        title_label.pack(pady=(12, 24))
 
         # 进程路径
         tk.Label(
@@ -817,11 +857,11 @@ class ProcessEditDialog:
             text="进程路径:",
             bg=WIN11_COLORS['card_bg'],
             fg=WIN11_COLORS['text'],
-            font=('Segoe UI', 10)
-        ).pack(anchor=tk.W, pady=(0, 5))
+            font=('Segoe UI', 10, 'bold')
+        ).pack(anchor=tk.W, pady=(0, 6))
 
         path_frame = tk.Frame(container, bg=WIN11_COLORS['card_bg'])
-        path_frame.pack(fill=tk.X, pady=(0, 5))
+        path_frame.pack(fill=tk.X, pady=(0, 6))
 
         self.path_var = tk.StringVar(value=path)
         path_entry = tk.Entry(
@@ -835,10 +875,10 @@ class ProcessEditDialog:
 
         browse_btn = ModernButton(
             path_frame,
-            text="浏览",
+            text="📁 浏览",
             command=self.browse_file,
-            width=80,
-            height=32,
+            width=90,
+            height=34,
             bg_color=WIN11_COLORS['accent']
         )
         browse_btn.pack(side=tk.RIGHT)
@@ -848,8 +888,8 @@ class ProcessEditDialog:
             text="例如: C:\\Program Files\\Game\\AceGuard.exe",
             bg=WIN11_COLORS['card_bg'],
             fg=WIN11_COLORS['text_secondary'],
-            font=('Segoe UI', 8)
-        ).pack(anchor=tk.W, pady=(0, 15))
+            font=('Segoe UI', 9)
+        ).pack(anchor=tk.W, pady=(0, 16))
 
         # CPU核心
         tk.Label(
@@ -857,8 +897,8 @@ class ProcessEditDialog:
             text="CPU核心 (逗号分隔):",
             bg=WIN11_COLORS['card_bg'],
             fg=WIN11_COLORS['text'],
-            font=('Segoe UI', 10)
-        ).pack(anchor=tk.W, pady=(0, 5))
+            font=('Segoe UI', 10, 'bold')
+        ).pack(anchor=tk.W, pady=(0, 6))
 
         affinity_str = ",".join(map(str, affinity)) if affinity else "0,1"
         self.affinity_var = tk.StringVar(value=affinity_str)
@@ -869,15 +909,15 @@ class ProcessEditDialog:
             relief=tk.SOLID,
             bd=1
         )
-        affinity_entry.pack(fill=tk.X, pady=(0, 5))
+        affinity_entry.pack(fill=tk.X, pady=(0, 6))
 
         tk.Label(
             container,
             text="例如: 0,1,2,3 表示使用前4个核心",
             bg=WIN11_COLORS['card_bg'],
             fg=WIN11_COLORS['text_secondary'],
-            font=('Segoe UI', 8)
-        ).pack(anchor=tk.W, pady=(0, 15))
+            font=('Segoe UI', 9)
+        ).pack(anchor=tk.W, pady=(0, 16))
 
         # 优先级
         tk.Label(
@@ -885,8 +925,8 @@ class ProcessEditDialog:
             text="优先级:",
             bg=WIN11_COLORS['card_bg'],
             fg=WIN11_COLORS['text'],
-            font=('Segoe UI', 10)
-        ).pack(anchor=tk.W, pady=(0, 5))
+            font=('Segoe UI', 10, 'bold')
+        ).pack(anchor=tk.W, pady=(0, 6))
 
         self.priority_var = tk.StringVar(value=priority)
         priority_combo = ttk.Combobox(
@@ -896,7 +936,7 @@ class ProcessEditDialog:
             state="readonly",
             font=('Segoe UI', 10)
         )
-        priority_combo.pack(fill=tk.X, pady=(0, 5))
+        priority_combo.pack(fill=tk.X, pady=(0, 6))
 
         # 优先级说明
         priority_desc = {
@@ -913,9 +953,9 @@ class ProcessEditDialog:
             text="",
             bg=WIN11_COLORS['card_bg'],
             fg=WIN11_COLORS['text_secondary'],
-            font=('Segoe UI', 8)
+            font=('Segoe UI', 9)
         )
-        desc_label.pack(anchor=tk.W, pady=(0, 20))
+        desc_label.pack(anchor=tk.W, pady=(0, 24))
 
         def update_desc(*args):
             desc_label.config(text=priority_desc.get(self.priority_var.get(), ""))
@@ -929,25 +969,25 @@ class ProcessEditDialog:
 
         ok_btn = ModernButton(
             btn_frame,
-            text="确定",
+            text="✓ 确定",
             command=self.ok,
-            width=100,
-            height=36,
+            width=120,
+            height=40,
             bg_color=WIN11_COLORS['success']
         )
-        ok_btn.pack(side=tk.LEFT, padx=5)
+        ok_btn.pack(side=tk.LEFT, padx=6)
 
         cancel_btn = ModernButton(
             btn_frame,
-            text="取消",
+            text="✗ 取消",
             command=self.cancel,
-            width=100,
-            height=36,
+            width=120,
+            height=40,
             bg_color=WIN11_COLORS['button_bg'],
             fg_color=WIN11_COLORS['text'],
             hover_color=WIN11_COLORS['button_hover']
         )
-        cancel_btn.pack(side=tk.LEFT, padx=5)
+        cancel_btn.pack(side=tk.LEFT, padx=6)
 
         # 居中显示
         self.dialog.update_idletasks()
