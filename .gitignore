@@ -42,3 +42,12 @@ Thumbs.db
 
 # User config (keep example)
 # config.json is included as template
+
+# Build files
+build/
+dist/
+*.spec.backup
+
+# PyInstaller
+*.manifest
+*.spec~

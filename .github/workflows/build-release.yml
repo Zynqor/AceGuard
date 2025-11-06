@@ -1,0 +1,146 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'  # 当推送 v* 标签时触发（例如 v1.0.0）
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Build GUI executable
+      run: |
+        pyinstaller build.spec
+
+    - name: Build CLI executable
+      run: |
+        pyinstaller build_cli.spec
+
+    - name: Create distribution directory
+      run: |
+        mkdir -p dist/release
+
+    - name: Copy files to release directory
+      run: |
+        Copy-Item dist/AceGuard.exe dist/release/
+        Copy-Item dist/AceGuard-CLI.exe dist/release/
+        Copy-Item config.json dist/release/
+        Copy-Item config.example.json dist/release/
+        Copy-Item README.md dist/release/
+        Copy-Item WARNINGS.md dist/release/
+        Copy-Item EXAMPLES.md dist/release/
+        Copy-Item LICENSE dist/release/
+
+    - name: Create ZIP archive
+      run: |
+        Compress-Archive -Path dist/release/* -DestinationPath AceGuard-Windows-x64.zip
+
+    - name: Get version from tag
+      id: get_version
+      shell: bash
+      run: |
+        if [[ $GITHUB_REF == refs/tags/* ]]; then
+          VERSION=${GITHUB_REF#refs/tags/}
+        else
+          VERSION="dev-$(date +'%Y%m%d-%H%M%S')"
+        fi
+        echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+        echo "Version: $VERSION"
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: AceGuard-Windows-x64
+        path: AceGuard-Windows-x64.zip
+
+    - name: Create Release
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          AceGuard-Windows-x64.zip
+          dist/AceGuard.exe
+          dist/AceGuard-CLI.exe
+        body: |
+          ## AceGuard 进程资源限制工具 ${{ steps.get_version.outputs.VERSION }}
+
+          ### 📦 下载说明
+
+          **推荐下载：** `AceGuard-Windows-x64.zip` (包含完整文件和文档)
+
+          或者单独下载：
+          - `AceGuard.exe` - GUI图形界面版本
+          - `AceGuard-CLI.exe` - 命令行版本
+
+          ### ✨ 功能特性
+
+          - ✅ 图形界面，简单易用
+          - ✅ 设置进程CPU亲和性（限制CPU核心）
+          - ✅ 设置进程优先级
+          - ✅ 持续监控模式，自动重新应用设置
+          - ✅ 系统托盘最小化
+          - ✅ 开机自启动
+          - ✅ 配置文件管理
+
+          ### 🚀 快速开始
+
+          1. 下载 `AceGuard-Windows-x64.zip`
+          2. 解压到任意目录
+          3. **以管理员身份运行** `AceGuard.exe`
+          4. 添加要限制的进程
+          5. 点击"开始监控"
+
+          ### ⚠️ 重要警告
+
+          **使用本工具修改反作弊程序（如AceGuard、EasyAntiCheat等）可能导致游戏账号被封禁！**
+
+          本工具仅供学习研究使用，使用者需自行承担所有风险。
+
+          详细说明请查看 `WARNINGS.md`
+
+          ### 📖 文档
+
+          - `README.md` - 完整使用说明
+          - `WARNINGS.md` - 安全警告和风险说明
+          - `EXAMPLES.md` - 详细使用示例
+          - `config.json` - 配置文件示例
+
+          ### 💻 系统要求
+
+          - Windows 7/8/10/11 (64位)
+          - 管理员权限
+
+          ### 📝 更新日志
+
+          查看完整更新日志请访问仓库。
+
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Upload development build
+      if: "!startsWith(github.ref, 'refs/tags/')"
+      uses: actions/upload-artifact@v3
+      with:
+        name: AceGuard-dev-${{ steps.get_version.outputs.VERSION }}
+        path: |
+          AceGuard-Windows-x64.zip
+          dist/AceGuard.exe
+          dist/AceGuard-CLI.exe
